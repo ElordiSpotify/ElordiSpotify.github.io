@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2BC48A"><link rel="apple-touch-icon" href="icon-192.png"><title>Dilo – Yapay zekâ ile dil öğren</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F5FB;--card:#fff;--ink:#1B2A49;--mut:#6B7690;--mint:#2BC48A;--sun:#FFC043;--coral:#FF6B6B;--line:#E3E3F0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121A2E;--card:#1B2744;--ink:#EEF1FA;--mut:#9AA6C4;--line:#2C3A5E}}
+:root[data-theme="dark"]{--bg:#121A2E;--card:#1B2744;--ink:#EEF1FA;--mut:#9AA6C4;--line:#2C3A5E}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Baloo 2',system-ui,sans-serif;font-weight:500;display:flex;justify-content:center}
+#app{width:100%;max-width:430px;height:100%;display:flex;flex-direction:column;position:relative}
+.top{display:flex;gap:6px;justify-content:space-between;padding:8px 12px;font-weight:800;font-size:14px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:0 9px;font:inherit;color:var(--ink)}
+main{flex:1;overflow-y:auto;padding:4px 16px 16px}
+nav{display:flex;border-top:2px solid var(--line);background:var(--card)}
+nav button{flex:1;border:0;background:none;padding:8px 0;font:inherit;color:var(--mut);font-size:12px}
+nav button b{display:block;font-size:22px;font-weight:500}nav .on{color:var(--mint);font-weight:800}
+h1{font-size:30px;line-height:1.1;margin:8px 0}h2{font-size:21px;margin:10px 0 6px}p{margin:6px 0;color:var(--mut)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px 14px;margin:10px 0}
+.btn{display:block;width:100%;border:0;border-bottom:4px solid #1E9467;background:var(--mint);color:#fff;font:inherit;font-weight:800;font-size:17px;padding:9px;border-radius:16px;margin:8px 0;cursor:pointer;text-align:center;text-decoration:none;transition:transform .08s}
+.btn:active,.node:active,.item:active,.opt:active{transform:translateY(3px)}
+.btn.alt{background:var(--sun);border-color:#D49A1F;color:#3a2a00}.btn.ghost{background:none;border:2px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.5}
+input,textarea,select{width:100%;font:inherit;padding:10px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);margin:4px 0}
+textarea{min-height:110px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.path{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}
+.node{width:68px;height:68px;border-radius:50%;border:0;border-bottom:6px solid #1E9467;background:var(--mint);font-size:26px;cursor:pointer;color:#fff;margin-top:8px}
+.node.done{background:var(--sun);border-color:#D49A1F}.node.lock{background:var(--line);border-color:var(--mut);opacity:.7;cursor:default}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-weight:700;font-size:18px;padding:12px;margin:8px 0;border-radius:16px;border:2px solid var(--line);border-bottom-width:4px;background:var(--card);color:var(--ink)}
+.opt.ok{border-color:var(--mint);background:rgba(43,196,138,.2)}.opt.no{border-color:var(--coral);background:rgba(255,107,107,.2)}
+.fb{position:sticky;bottom:0;margin-top:14px;padding:10px 14px;border-radius:18px;background:var(--card);border:2px solid var(--line)}
+.fb.ok{border-color:var(--mint)}.fb.no{border-color:var(--coral)}
+.bar{height:14px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--mint);transition:width .3s}
+.av{width:120px;height:120px;border-radius:50%;margin:auto;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative}
+.av small{position:absolute;top:-8px;right:-2px;font-size:36px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.item{border:2px solid var(--line);border-bottom-width:4px;border-radius:16px;padding:8px;text-align:center;background:var(--card);font:inherit;color:var(--ink);cursor:pointer}
+.item.eq{border-color:var(--mint)}.item span{display:block;font-size:30px;min-height:38px}
+.msg{padding:8px 12px;border-radius:16px;margin:6px 0;max-width:85%}.me{background:var(--mint);color:#fff;margin-left:auto}.ai{background:var(--card);border:2px solid var(--line)}
+.toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-weight:700;z-index:9;white-space:nowrap}
+.dot{flex:0 0 34px;height:34px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--mut)}.dot.on{background:var(--sun);color:#3a2a00}
+.cf{position:fixed;top:-30px;font-size:24px;animation:fall 2.2s linear forwards;pointer-events:none;z-index:20}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media(prefers-reduced-motion:reduce){.cf{display:none}}
+.tag{display:inline-block;background:var(--line);border-radius:99px;padding:0 10px;margin:2px;font-size:13px;color:var(--ink)}.big{font-size:48px;font-weight:800;line-height:1;color:var(--mint)}
+</style></head><body><div id="app"></div>
+<script>
+const ACC=[['👑',60],['🎩',30],['🕶️',20],['🎧',30],['🌸',10],['🎀',15],['🧢',20],['🎓',40],['⭐',25],['🔥',50]];
+const FACE=[['🙂',0],['😎',0],['🤓',0],['🥳',0],['🦊',0],['🐼',0],['🤖',30],['👽',30],['🦁',40],['🐯',40],['🐸',35],['🦄',80]];
+const BG=[['#FFC043',0],['#2BC48A',0],['#FF6B6B',0],['#7C8CFF',0],['#FF9AD5',0],['linear-gradient(135deg,#FF9A9E,#FAD0C4)',40],['linear-gradient(135deg,#667EEA,#764BA2)',50],['linear-gradient(135deg,#F6D365,#FDA085)',50],['linear-gradient(135deg,#43E97B,#38F9D7)',60]];
+const day=o=>new Date(Date.now()-o*864e5).toLocaleDateString('sv-SE'),today=()=>day(0),gap=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+function tone(f,t0,d,ty,v){if(S.mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+t0;o.type=ty||'sine';o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(v||.15,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d)}catch(e){}}
+const SND={ok:()=>{tone(660,0,.12);tone(880,.1,.22)},no:()=>tone(180,0,.3,'sawtooth',.12),tap:()=>tone(520,0,.05,'triangle',.08),win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,i*.12,.28,'triangle')),coin:()=>{tone(988,0,.08,'square',.05);tone(1319,.08,.2,'square',.05)}};
+document.addEventListener('pointerdown',e=>{if(e.target.closest('button')&&!e.target.closest('.opt'))SND.tap()});
+function say(t){if(S.mute||!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=LANGS[S.lang][1];u.rate=.85;speechSynthesis.speak(u)}
+function confetti(){for(let i=0;i<28;i++){const s=document.createElement('span');s.className='cf';s.textContent=rnd(['🎉','⭐','✨','💎','🔥']);s.style.left=Math.random()*100+'%';s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),3200)}}
+function toast(t){clearTimeout(toastT);document.querySelectorAll('.toast').forEach(x=>x.remove());const e=document.createElement('div');e.className='toast';e.textContent=t;A.appendChild(e);toastT=setTimeout(()=>e.remove(),2200)}
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').trim();
+function addXP(x){S.xp+=x;S.qd.x+=x}
+function study(){const t=today();if(S.last!==t){S.streak++;S.last=t}if(!S.days.includes(t))S.days=[...S.days,t].slice(-30)}
+function qchk(){S.qd.l++;QS().forEach((q,i)=>{if(q[1]&&!S.qd.g.includes(i)){S.qd.g.push(i);S.gems+=q[2];setTimeout(()=>{SND.coin();toast('Görev tamam! +'+q[2]+' 💎')},1200)}})}
+const QS=()=>[['1 ders bitir',S.qd.l>=1,5],['15 doğru cevap ver ('+Math.min(15,S.qd.c)+'/15)',S.qd.c>=15,5],['50 XP kazan ('+Math.min(50,S.qd.x)+'/50)',S.qd.x>=50,10]];
+const esc=t=>t.replace(/</g,'&lt;');
+function shop(){const tabs=['Aksesuar','Yüz','Arka plan','Güçlendirici'],C=[ACC,FACE,BG],K=['a','f','b'];
+ let h=`<div class="av" style="background:${BG[S.bg][0]}">${S.face}<small>${S.acc}</small></div><div class="row" style="margin-top:12px">${tabs.map((x,i)=>`<button class="btn ${st==i?'':'ghost'}" style="font-size:13px;padding:6px" onclick="st=${i};render()">${x}</button>`).join('')}</div>`;
+ if(st==3)return h+`<div class="grid"><button class="item" onclick="buyP('freeze',20)"><span>❄️</span>Seri dondurma<br>💎 20 · var: ${S.freeze}</button><button class="item" onclick="buyP('dbl',30)"><span>⚡</span>Çift XP (1 ders)<br>💎 30 · var: ${S.dbl}</button></div><p>Seri dondurma en fazla 2 tane tutulur.</p>`;
+ return h+`<div class="grid">${C[st].map(([v,p],i)=>{const key=K[st]+i,own=!p||S.own.includes(key),eq=(st==0&&S.acc==v)||(st==1&&S.face==v)||(st==2&&S.bg==i);return `<button class="item ${eq?'eq':''}" onclick="buy(${st},${i},${p})"><span style="${st==2?`background:${v};border-radius:10px;height:38px`:''}">${st==2?'':v}</span>${eq?'Takılı':own?'Tak':'💎 '+p}</button>`}).join('')}</div>`}
+function buy(t,i,p){const key='afb'[t]+i,v=[ACC,FACE,BG][t][i][0];if(p&&!S.own.includes(key)){if(S.gems<p){SND.no();return toast('Yeterli 💎 yok')}S.gems-=p;S.own.push(key);SND.coin()}
+ if(t==0)S.acc=S.acc==v?'':v;else if(t==1)S.face=v;else S.bg=i;render()}
+function buyP(k,p){if(k=='freeze'&&S.freeze>=2)return toast('En fazla 2 tane taşıyabilirsin');if(S.gems<p){SND.no();return toast('Yeterli 💎 yok')}S.gems-=p;S[k]++;SND.coin();toast('Satın alındı!');render()}
+const LV=['A1','A2','B1','B2','C1','C2'],LNM=['Başlangıç','Temel','Orta','Orta-üstü','İleri','Ustalık'];
+const LANGS={en:['İngilizce','en-US'],es:['İspanyolca','es-ES'],de:['Almanca','de-DE'],fr:['Fransızca','fr-FR'],it:['İtalyanca','it-IT']};
+const lg=()=>LANGS[S.lang][0];
+let S={key:'',lang:'en',lvl:0,tier:0,xp:0,gems:20,streak:0,last:'',days:[],freeze:0,dbl:0,unit:0,les:0,face:'🙂',acc:'',bg:0,own:[],step:0,tab:0,mute:0,qd:{d:'',l:0,c:0,x:0,g:[]},plan:null,rep:null,hist:[],focus:[],done:[],mist:[],rem:19,nt:'',notified:'',ua:null};
+try{Object.assign(S,JSON.parse(localStorage.getItem('dilo3')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('dilo3',JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),A=$('#app'),rnd=a=>a[Math.random()*a.length|0],shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+let R=null,chat=[],sub=0,st=0,toastT,AC,busy=0,Wt='',Pm='',SM=null;
+const lvTxt=()=>S.lvl==5?`C2 ustalık (aşama ${S.tier+1}, C2 üstü zorluk)`:LV[S.lvl];
+const lvShort=()=>S.lvl==5&&S.tier?'C2·'+(S.tier+1):LV[S.lvl];
+if(S.qd.d!==today())S.qd={d:today(),l:0,c:0,x:0,g:[]};
+if(S.last&&gap(S.last,today())>1){const need=gap(S.last,today())-1;if(S.freeze>=need){S.freeze-=need;S.last=day(1);setTimeout(()=>toast('❄️ Seri dondurma serini kurtardı!'),500)}else S.streak=0}
+try{window.claude&&claude.use('sample').then(x=>SM=x).catch(()=>{})}catch(e){}
+/* ---- yapay zekâ katmanı ---- */
+async function gem(p,js){const b={contents:[{parts:[{text:p}]}]};if(js)b.generationConfig={responseMimeType:'application/json'};
+ const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key='+encodeURIComponent(S.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+ const d=await r.json();if(d.error)throw Object.assign(new Error(d.error.message),{api:1});return d.candidates[0].content.parts[0].text}
+async function ai(p,js){let err;if(S.key){try{return await gem(p,js)}catch(e){err=e;if(e.api||!SM)throw e}}
+ if(SM){const r=await SM(p,{cache:false,modelTier:'quick'});return r.text}
+ throw err||new Error('Yapay zekâ bağlantısı yok')}
+const SYS=()=>`Sen ${lg()} öğreten, Duolingo tarzı çalışan bir yapay zekâ öğretmenisin. Öğrencinin ana dili Türkçe. Öğrencinin güncel seviyesi: ${lvTxt()}. `;
+const DIFF=()=>S.lvl==5?`Zorluk: C2 üstü ustalık, aşama ${S.tier+1}. Çok zor olsun: nadir kelimeler, deyimler, ince dilbilgisi, akademik ve edebî metinler; aşama arttıkça daha da zorlaştır.`:`Seviye: ${LV[S.lvl]}.`;
+function J(t){const a=t.search(/[\[{]/),b=Math.max(t.lastIndexOf(']'),t.lastIndexOf('}'));return JSON.parse(t.slice(a,b+1))}
+const aj=async p=>J(await ai(SYS()+p+'\nYalnızca geçerli JSON döndür, başka metin yazma.',1));
+const wait=m=>{A.innerHTML=`<main style="text-align:center;padding-top:90px"><div style="font-size:60px">🧠</div><h2>${m}</h2></main>`};
+const msgOf=e=>esc(String((e&&e.message)||e)).slice(0,180);
+function fail(e,retry){A.innerHTML=`<main style="text-align:center;padding-top:60px"><div style="font-size:56px">📡</div><h2>Yapay zekâya ulaşılamadı</h2><p>${msgOf(e)}</p><button class="btn" onclick="${retry}">Tekrar dene</button>${R&&R.mode=='place'?'':`<button class="btn ghost" onclick="R=null;render()">Geri dön</button>`}</main>`}
+const tags=a=>(a||[]).map(x=>`<span class="tag">${esc(String(x))}</span>`).join('');
+/* ---- ünite planı (yapay zekâ) ---- */
+const planOK=()=>S.plan&&S.plan.u==S.unit&&S.plan.k==S.lvl+'.'+S.tier;
+async function loadPlan(){wait(`Ünite ${S.unit+1} planlanıyor…`);
+ try{const p=await aj(`${DIFF()} Öğrenci için ${S.unit+1}. üniteyi planla. Önceki analiz notları: ${JSON.stringify(S.hist.slice(-3))}. Zayıf konular: ${JSON.stringify(S.focus)}. Daha önce işlenen üniteler: ${JSON.stringify(S.done.slice(-8))}; bunları tekrar etme. Şema: {"baslik":"","hedef":"tek cümle","dersler":[{"baslik":"","odak":""}],"sinav":"sınavın kapsamı"} (dersler: tam 5 adet)`);
+  if(!p.dersler||p.dersler.length<5)throw new Error('Plan geçersiz geldi');S.plan={u:S.unit,k:S.lvl+'.'+S.tier,...p};save();render()}catch(e){fail(e,'render()')}}
+/* ---- soru üretimi ---- */
+const RULES='KURALLAR: Her çoktan seçmeli sorunun tam 4 şıkkı ve TEK doğru cevabı olsun. Yanlış şıklar kesinlikle yanlış olsun; aynı ya da yakın anlama gelen iki şık ASLA olmasın (eş anlamlı veya aynı çeviri yok). Yayınlamadan önce her sorunun cevabını kendin doğrula. Her soru için "e" alanına tek cümlelik Türkçe açıklama yaz. Sorular birbirinden farklı olsun. Doğru şık indeksi (a) rastgele dağılsın.';
+const SCH='{"t":"c","q":"soru","o":["","","",""],"a":0,"e":"açıklama","say":"(isteğe bağlı) dinleme sorusu için hedef dilde seslendirilecek metin"} ya da yazma sorusu {"t":"w","q":"soru","ans":["kabul edilen cevap","varyant"],"e":"açıklama"}';
+function okQ(x){if(!x||!x.q)return 0;if(x.t=='w'){if(typeof x.ans=='string')x.ans=[x.ans];return Array.isArray(x.ans)&&x.ans.length>0}x.t='c';return Array.isArray(x.o)&&x.o.length==4&&new Set(x.o.map(o=>norm(String(o)))).size==4&&Number.isInteger(x.a)&&x.a>=0&&x.a<4}
+async function genQs(mode){let p,n,pl=S.plan;
+ if(mode=='place'){n=20;p=`Seviye belirleme sınavı hazırla: tam 20 soru, tam şu sırayla: 3 A1, 3 A2, 4 B1, 4 B2, 3 C1, 3 C2 (kolaydan zora). Kelime, boşluk doldurma, çeviri, dilbilgisi ve kısa okuma karışık olsun; yalnızca "c" tipi kullan. ${RULES}`}
+ else if(mode=='lesson'){n=8;const l=pl.dersler[S.les];p=`${DIFF()} Ünite: ${pl.baslik} (${pl.hedef}). Ders ${S.les+1}: ${l.baslik}, odak: ${l.odak}. "not" alanına öğrencinin Türkçe okuyacağı 3-5 cümlelik, örnekli kısa ders notu yaz. Sonra ${n} soru hazırla: çeviri, boşluk doldurma, anlam, dilbilgisi karışık; 1-2 dinleme sorusu (say alanlı) ve 1-2 yazma sorusu ("w") olsun. ${S.mist.length?'Öğrencinin son hataları (ilgili olanları pekiştir): '+JSON.stringify(S.mist.slice(-5)):''} ${RULES}`}
+ else{n=12;p=`${DIFF()} Ünite sınavı hazırla. Ünite: ${pl.baslik}. Kapsam: ${pl.sinav}. Dersler: ${pl.dersler.map(d=>d.baslik).join(', ')}. ${n} soru; çeviri, boşluk doldurma, anlam, dilbilgisi, dinleme ve 2 yazma sorusu karışık; birkaç soru zorlayıcı olsun. ${RULES}`}
+ const d=await aj(`${p}\nŞema: {"not":"(yalnızca ders için)","sorular":[ ${SCH} ]}`);
+ let qs=(d.sorular||[]).slice(0,n).map((x,i)=>{if(mode=='place')x.lv=[0,0,0,1,1,1,2,2,2,2,3,3,3,3,4,4,4,5,5,5][i];return x}).filter(okQ);
+ qs=qs.map(x=>{if(x.t=='c'){const o=shuf(x.o.map((t,i)=>[t,i==x.a]));x.o=o.map(z=>z[0]);x.a=o.findIndex(z=>z[1])}return x});
+ if(qs.length<(mode=='place'?15:Math.ceil(n*.75)))throw new Error('Yapay zekâ yeterli geçerli soru üretemedi');
+ return{qs,note:d.not}}
+async function begin(mode){wait(mode=='place'?'Seviye sınavın hazırlanıyor…':mode=='exam'?'Ünite sınavın hazırlanıyor…':'Dersin hazırlanıyor…');
+ try{const g=await genQs(mode);R={qs:g.qs,i:0,ok:0,mode,combo:0,per:{},log:[]};if(mode=='lesson'&&g.note)noteScr(g.note);else ask()}catch(e){fail(e,`begin('${mode}')`)}}
+function noteScr(t){A.innerHTML=hdr()+`<main><h2>📘 Ders notu</h2><div class="card" style="white-space:pre-wrap">${esc(t)}</div><button class="btn" onclick="ask()">Soruları başlat</button></main>`}
+/* ---- soru ekranı ---- */
+function hdr(){return `<div class="top"><span class="chip">🔥${S.streak}</span><span class="chip">❄️${S.freeze}</span><span class="chip">⭐${S.xp}</span><span class="chip">💎${S.gems}</span><span class="chip" style="background:var(--mint);color:#fff;border-color:var(--mint)">${lvShort()}</span><button class="chip" onclick="S.mute=!S.mute;save();R&&R.mode?0:render()">${S.mute?'🔇':'🔊'}</button></div>`}
+function ask(){const q=R.qs[R.i];
+ A.innerHTML=hdr()+`<main><div class="row" style="align-items:center;flex-wrap:nowrap">${R.mode=='place'?'':`<button class="item" style="flex:0 0 44px" onclick="R=null;render()">✕</button>`}<div class="bar" style="flex:1"><i style="width:${R.i/R.qs.length*100}%"></i></div><b style="flex:0 0 52px">${R.combo>1?'🔥×'+R.combo:''}</b></div>
+ <h2 style="margin-top:18px">${esc(q.q)}</h2>${q.say?`<button class="item" onclick="say(R.qs[R.i].say)">🔊 Dinle</button>`:''}
+ ${q.t=='w'?`<input id="a" autocomplete="off" autocapitalize="off" placeholder="Cevabını yaz" onkeydown="if(event.key=='Enter')chk()"><button class="btn" id="go" onclick="chk()">Kontrol et</button>`:q.o.map((o,j)=>`<button class="opt" onclick="pick(${j})">${esc(String(o))}</button>`).join('')}<div id="fb"></div></main>`;
+ if(q.say)say(q.say);if(q.t=='w')$('#a').focus()}
+function pick(j){const q=R.qs[R.i];if(j!=q.a)document.querySelectorAll('.opt')[j].classList.add('no');res(j==q.a,q.o[q.a])}
+function chk(){const q=R.qs[R.i],v=$('#a').value;if(!v.trim())return;res(q.ans.some(a=>norm(String(a))==norm(v)),q.ans[0])}
+function res(ok,right){const q=R.qs[R.i],L=q.lv??0;R.per[L]=R.per[L]||[0,0];R.per[L][1]++;R.log.push({soru:String(q.q).slice(0,80),dogru:ok});
+ if(ok){R.ok++;R.per[L][0]++;R.combo++;S.qd.c++;SND.ok()}else{R.combo=0;SND.no();navigator.vibrate&&navigator.vibrate(120);if(R.mode!='place')S.mist=[...S.mist,String(q.q).slice(0,80)].slice(-10)}
+ document.querySelectorAll('.opt').forEach((o,k)=>{o.disabled=true;if(k==q.a)o.classList.add('ok')});
+ if(q.t=='w'){$('#a').disabled=true;$('#go').style.display='none'}
+ $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><b>${ok?rnd(['Harika!','Süper!','Doğru!','Muhteşem!']):'Doğrusu: '+esc(String(right))}</b>${q.e?`<p>${esc(q.e)}</p>`:''}<button class="btn ${ok?'':'alt'}" onclick="nx()">${R.i+1<R.qs.length?'Devam':'Bitir'}</button></div>`;$('#fb').scrollIntoView()}
+function nx(){R.i++;R.i<R.qs.length?ask():fin()}
+/* ---- bitiş ve yapay zekâ analizi ---- */
+function genNt(){ai(SYS()+`Öğrenciyi yarın ders yapmaya çağıran, ${S.streak} günlük serisini koruması için motive eden, tek cümlelik, emojili, samimi bir Türkçe bildirim metni yaz. Yalnızca metni yaz.`).then(t=>{S.nt=t.trim().replace(/^["“]|["”]$/g,'').slice(0,140);save();try{caches.open('dilo-meta').then(c=>c.put('ntext',new Response(S.nt)))}catch(e){}}).catch(()=>{})}
+async function fin(){const{mode,ok,qs}=R,n=qs.length;let h='',pass=true;
+ if(mode=='place'){let lv=0;for(let l=0;l<6;l++){const p=R.per[l];if(!p||p[0]/p[1]<.5)break;lv=l}
+  wait('Sonuçların analiz ediliyor…');S.lvl=lv;S.tier=0;
+  try{const a=await aj(`Seviye belirleme sınavı sonucu: hesaplanan seviye ${LV[lv]}, ${ok}/${n} doğru. Soru sonuçları: ${JSON.stringify(R.log)}. Türkçe kısa analiz yap. Şema: {"ozet":"2-3 cümle","guclu":["..."],"zayif":["..."]}`);
+   S.rep={lv,ok,n,ozet:a.ozet,guclu:a.guclu,zayif:a.zayif,per:R.per};S.focus=a.zayif||[]}catch(e){S.lvl=0;return fail(e,'fin()')}
+  S.unit=0;S.les=0;S.plan=null;S.step=3;
+  h=`<div style="font-size:60px">🎯</div><div class="big">${LV[lv]}</div><h2>${LNM[lv]} seviyesindesin</h2><p>${ok}/${n} doğru</p>${LV.map((x,l)=>{const p=R.per[l]||[0,1];return `<div style="text-align:left">${x}<div class="bar"><i style="width:${p[0]/p[1]*100}%"></i></div></div>`}).join('')}<div class="card" style="text-align:left"><p>${esc(a_(S.rep.ozet))}</p><b>Güçlü yönler</b><div>${tags(S.rep.guclu)}</div><b>Geliştirilecek</b><div>${tags(S.rep.zayif)}</div></div>`}
+ else if(mode=='lesson'){pass=ok>=5;let x=10+ok*3,g=ok>=n-1?5:2;if(pass){if(S.dbl>0){x*=2;S.dbl--}addXP(x);S.gems+=g;S.les++;study();qchk();genNt()}
+  h=pass?`<div style="font-size:64px">🎉</div><h1>Ders bitti!</h1><p>${ok}/${n} doğru · +${x} XP · +${g} 💎</p>`:`<div style="font-size:64px">💪</div><h1>Neredeyse!</h1><p>${ok}/${n} doğru. Geçmek için en az 5 gerekiyor, tekrar dene.</p>`}
+ else{pass=ok>=Math.ceil(n*.75);wait('Yapay zekâ ünite analizini yapıyor…');let a;
+  try{a=await aj(`Ünite sınavı sonucu. Ünite: ${S.plan.baslik}. Seviye: ${lvTxt()}. Skor ${ok}/${n} (${pass?'geçti':'kaldı'}). Soru sonuçları: ${JSON.stringify(R.log)}. Önceki analizler: ${JSON.stringify(S.hist.slice(-3))}. Türkçe analiz yap. Seviye kararı: yalnızca skor en az %85 ve ustalık belirgin ise "artir", aksi halde "koru". Şema: {"analiz":"3-4 cümle","guclu":["..."],"zayif":["..."],"karar":"artir ya da koru","gerekce":"tek cümle","sonraki_odak":["..."]}`)}catch(e){return fail(e,'fin()')}
+  let up='';S.focus=a.sonraki_odak||a.zayif||[];S.hist=[...S.hist,{unite:S.unit+1,ozet:String(a.analiz).slice(0,160)}].slice(-6);S.ua=a;
+  if(pass){S.done=[...S.done,S.plan.baslik].slice(-20);S.unit++;S.les=0;S.gems+=20;addXP(50);study();qchk();genNt();
+   if(S.lvl<5&&String(a.karar).startsWith('art')){S.lvl++;S.tier=0;up=`Seviye atladın: ${LV[S.lvl]}`}else if(S.lvl==5){S.tier++;up=`Ustalık aşaması ${S.tier+1} açıldı, sorular zorlaşıyor`}}
+  h=`<div style="font-size:64px">${pass?'🏆':'📚'}</div><h1>${pass?(up||'Ünite geçildi!'):'Sınav geçilemedi'}</h1><p>${ok}/${n} doğru${pass?' · +50 XP · +20 💎':'. En az '+Math.ceil(n*.75)+' gerekiyor, aynı sınavı yeni sorularla tekrar edebilirsin.'}</p><div class="card" style="text-align:left"><b>🧠 Yapay zekâ analizi</b><p>${esc(a_(a.analiz))}</p><b>Güçlü</b><div>${tags(a.guclu)}</div><b>Çalışılacak</b><div>${tags(a.zayif)}</div><p>${esc(a_(a.gerekce))}</p></div>`}
+ R=null;pass?(SND.win(),confetti()):SND.no();S.tab=0;save();
+ A.innerHTML=hdr()+`<main style="text-align:center;padding-top:20px">${h}<button class="btn" onclick="render()">Devam</button></main>`}
+const a_=x=>x==null?'':String(x);
+/* ---- ekranlar ---- */
+function render(){if(S.step<3)return onboard();if(S.tab==0&&!planOK()){loadPlan();return}
+ A.innerHTML=hdr()+`<main>${[path,practice,shop,profile][S.tab]()}</main><nav>${['🗺️|Yol','🎤|Pratik','🛍️|Mağaza','👤|Profil'].map((x,i)=>`<button class="${i==S.tab?'on':''}" onclick="S.tab=${i};render()"><b>${x.split('|')[0]}</b>${x.split('|')[1]}</button>`).join('')}</nav>`;save();
+ if(S.tab==1&&sub==2&&!chat.length&&!busy)startChat()}
+async function verify(){const k=$('#k').value.trim();if(!k&&!SM){$('#er').innerHTML='<p style="color:var(--coral)">API anahtarı gerekli.</p>';return}
+ S.key=k;$('#er').innerHTML='<p>Doğrulanıyor…</p>';try{await ai('Sadece "ok" yaz.');S.step=1;render()}catch(e){$('#er').innerHTML=`<p style="color:var(--coral)">Anahtar doğrulanamadı: ${msgOf(e)}</p>`}}
+function onboard(){
+ if(S.step==0){A.innerHTML=`<main style="padding-top:36px"><h1>Dilo’ya hoş geldin 👋</h1><p>Tüm dersler, sınavlar, sohbet ve analizler yapay zekâ tarafından senin için üretilir. Başlamak için Google AI Studio’dan ücretsiz bir API anahtarı al.</p><a class="btn alt" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio’da anahtar al</a><input id="k" type="password" placeholder="API anahtarını yapıştır" value="${esc(S.key)}"><button class="btn" onclick="verify()">Anahtarı doğrula ve devam et</button><div id="er"></div><p>Anahtarın yalnızca bu cihazda saklanır.</p></main>`;return}
+ if(S.step==1){A.innerHTML=`<main style="padding-top:36px"><h1>Ne öğrenmek istiyorsun?</h1><select id="l">${Object.entries(LANGS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select><button class="btn" onclick="S.lang=$('#l').value;S.step=2;render()">Devam et</button></main>`;return}
+ A.innerHTML=`<main style="padding-top:36px"><h1>Seviye belirleme sınavı</h1><p>Yapay zekâ senin için 20 soru hazırlar (A1’den C2’ye). Bu sınav zorunludur ve bir kez yapılır. Sonuç, dersler ve ünite planların bu sonuca göre kurulur; sonrasında seviyeni her ünite sonundaki yapay zekâ analizi günceller.</p><button class="btn" onclick="begin('place')">Sınava başla</button></main>`}
+function path(){const p=S.plan;let h='';
+ h+=`<div class="card" style="text-align:center"><p style="margin:0">Güncel seviyen</p><div class="big">${lvShort()}</div><b>${LNM[S.lvl]}</b> · Ünite ${S.unit+1}</div>`;
+ const dots=[6,5,4,3,2,1,0].map(o=>`<span class="dot ${S.days.includes(day(o))?'on':''}">${new Date(Date.now()-o*864e5).toLocaleDateString('tr',{weekday:'narrow'})}</span>`).join('');
+ h+=`<div class="card"><b>🔥 ${S.streak} günlük seri</b><div class="row" style="flex-wrap:nowrap;margin-top:8px">${dots}</div><p>❄️ ${S.freeze} seri dondurma hakkın var, bir gün atlarsan otomatik kullanılır.</p></div>`;
+ if('Notification' in window&&Notification.permission=='default')h+=`<button class="btn alt" onclick="enableN()">🔔 Günlük hatırlatmaları aç</button>`;
+ h+=`<div class="card"><b>Günlük görevler</b>${QS().map((q,i)=>`<p>${S.qd.g.includes(i)?'✅':'⬜'} ${q[0]} → +${q[2]} 💎</p>`).join('')}</div>`;
+ h+=`<h2>Ünite ${S.unit+1}: ${esc(p.baslik)}</h2><p>${esc(p.hedef)}</p><div class="path">`;
+ for(let i=0;i<6;i++){const ex=i==5,s=i<S.les?'done':i==S.les?'':'lock';h+=`<button class="node ${s}" style="margin-left:${[0,56,0,-56][i%4]}px" ${i==S.les?`onclick="begin('${ex?'exam':'lesson'}')"`:''}>${ex?'🏆':i<S.les?'✓':i==S.les?'▶':'🔒'}</button><small>${ex?'Ünite sınavı + analiz':esc(p.dersler[i].baslik)}</small>`}
+ return h+`</div><p style="text-align:center">${S.lvl==5?'C2’desin: bundan sonra sonsuza dek giderek zorlaşan ustalık üniteleri gelir.':'Üniteler sınırsızdır. Yapay zekâ her ünite sonunda seni analiz eder, seviyeni gerekirse yükseltir ve sonraki üniteyi senin için planlar.'}</p>`}
+function practice(){const tabs=`<div class="row">${['✍️ Yaz','🎙️ Konuş','💬 Sohbet'].map((x,i)=>`<button class="btn ${sub==i?'':'ghost'}" onclick="sub=${i};render()">${x}</button>`).join('')}</div>`;
+ if(sub==0)return tabs+`<h2>Yazma</h2><button class="btn alt" onclick="wtopic()">💡 Yapay zekâdan konu iste</button><p id="tp">${esc(Wt)}</p><textarea id="w" placeholder="${lg()} yaz…"></textarea><button class="btn" onclick="fix()">Geri bildirim al</button><div id="o"></div>`;
+ if(sub==1)return tabs+`<h2>Konuşma</h2><button class="btn alt" onclick="mtask()">💡 Konuşma görevi iste</button><p id="tp">${esc(Pm)}</p><button class="btn" onclick="mic()">🎙️ Konuşmaya başla</button><div id="o" class="card" style="display:none"></div>`;
+ return tabs+`<div class="row" style="align-items:center"><h2>Sohbet</h2><button class="btn ghost" style="flex:0 0 130px" onclick="chat=[];busy=0;render()">Yeni sohbet</button></div><div id="ch">${chat.map(m=>`<div class="msg ${m[0]}">${esc(m[1]).replace(/\n/g,'<br>')}</div>`).join('')}</div><div class="row" style="flex-wrap:nowrap"><input id="c" placeholder="Mesajın…" onkeydown="if(event.key=='Enter')send()"><button class="btn" style="flex:0 0 84px" onclick="send()">Gönder</button></div>`}
+async function wtopic(){const e=$('#tp');e.textContent='Konu hazırlanıyor…';try{Wt=(await ai(SYS()+`Yazma alıştırması için seviyeye uygun, tek cümlelik bir konu ya da soru ver (Türkçe yönerge). Yalnızca yönergeyi yaz.`)).trim();e.textContent=Wt}catch(x){e.textContent='Yapay zekâya ulaşılamadı: '+msgOf(x)}}
+async function fix(){const t=$('#w').value.trim();if(!t)return;$('#o').innerHTML='<p>Okuyorum…</p>';try{const r=await ai(SYS()+`Öğrenci şu yazıyı yazdı${Wt?' (konu: '+Wt+')':''}:\n"""${t}"""\nTürkçe geri bildirim ver: Puan (10 üzerinden), Düzeltilmiş hali, Hatalar ve kısa açıklamaları, Bir sonraki adım önerisi.`);$('#o').innerHTML=`<div class="card" style="white-space:pre-wrap">${esc(r)}</div>`;addXP(15);SND.coin();save()}catch(e){$('#o').innerHTML=`<p>Yapay zekâya ulaşılamadı: ${msgOf(e)}</p>`}}
+async function mtask(){const e=$('#tp');e.textContent='Görev hazırlanıyor…';try{Pm=(await ai(SYS()+`Konuşma alıştırması için ${lg()} dilinde, seviyeye uygun TEK bir cümle ver; öğrenci bunu yüksek sesle söyleyecek. Yalnızca cümleyi yaz.`)).trim();e.textContent=Pm}catch(x){e.textContent='Yapay zekâya ulaşılamadı: '+msgOf(x)}}
+function mic(){const Rec=window.SpeechRecognition||window.webkitSpeechRecognition,o=$('#o');o.style.display='block';if(!Rec){o.textContent='Bu tarayıcı konuşma tanımayı desteklemiyor. Chrome’da dene.';return}
+ const r=new Rec();r.lang=LANGS[S.lang][1];o.textContent='Dinliyorum…';r.onresult=async e=>{const t=e.results[0][0].transcript;o.innerHTML=`<b>Duyduğum:</b> ${esc(t)}<p id="f">Geri bildirim hazırlanıyor…</p>`;try{$('#f').textContent=await ai(SYS()+`Öğrenciden şu görev istendi: "${Pm||'serbest konuşma'}". Öğrenci şunu söyledi: "${t}". Türkçe kısa geri bildirim ver: doğruluk, telaffuz ipucu, dilbilgisi ve 10 üzerinden puan.`);addXP(15);SND.coin();save()}catch(x){$('#f').textContent='Yapay zekâya ulaşılamadı: '+msgOf(x)}};r.onerror=()=>o.textContent='Mikrofon izni verilmedi veya ses alınamadı.';r.start()}
+async function startChat(){busy=1;chat=[['ai','…']];render();try{chat=[['ai',(await ai(SYS()+`Sohbet partneri öğretmen olarak öğrenciyi ${lg()} dilinde kısa selamla ve seviyesine uygun bir açılış sorusu sor (1-2 cümle).`)).trim()]]}catch(e){chat=[['ai','⚠️ Yapay zekâya ulaşılamadı: '+msgOf(e)+' (Yeni sohbet ile tekrar dene)']]}busy=0;render()}
+async function send(){if(busy)return;const t=$('#c').value.trim();if(!t)return;busy=1;chat.push(['me',t]);chat.push(['ai','…']);render();
+ const hist=chat.slice(0,-1).slice(-12).map(m=>(m[0]=='me'?'Öğrenci: ':'Öğretmen: ')+m[1]).join('\n');
+ try{const r=await ai(SYS()+`Sohbet geçmişi:\n${hist}\n\nÖğrencinin SON mesajına doğal şekilde cevap ver: ${lg()} dilinde, 1-3 cümle, seviyeye uygun, hazır kalıp kullanma. Selamlaşmaysa sadece karşılık ver ve nasıl olduğunu sor. Öğrencinin mesajında hata varsa en sonda yeni satırda "💡" ile başlayan tek cümlelik Türkçe düzeltme notu ekle.`);chat[chat.length-1]=['ai',r.trim()];addXP(5)}catch(e){chat[chat.length-1]=['ai','⚠️ Yapay zekâya ulaşılamadı: '+msgOf(e)]}
+ busy=0;render();const i=$('#c');i&&i.focus();const c=$('#ch');c&&c.lastElementChild&&c.lastElementChild.scrollIntoView()}
+function profile(){const r=S.rep,u=S.ua;return `<div class="av" style="background:${BG[S.bg][0]}">${S.face}<small>${S.acc}</small></div><h2 style="text-align:center">${lg()} · ${lvTxt()}</h2>
+<div class="card"><b>📋 Seviye belirleme sonucu</b>${r?`<p>İlk seviyen ${LV[r.lv]} (${r.ok}/${r.n} doğru). ${esc(a_(r.ozet))}</p><div>${tags(r.guclu)}${tags(r.zayif)}</div>`:'<p>—</p>'}</div>
+<div class="card"><b>🧠 Son ünite analizi</b>${u?`<p>${esc(a_(u.analiz))}</p><div>${tags(u.zayif)}</div>`:'<p>İlk ünite sınavından sonra burada görünür.</p>'}</div>
+<div class="card"><b>⚙️ Ayarlar</b><p>Hatırlatma saati</p><select onchange="S.rem=+this.value;save()">${[8,10,12,15,18,19,20,21,22].map(h=>`<option value="${h}" ${S.rem==h?'selected':''}>${h}:00</option>`).join('')}</select>${'Notification' in window&&Notification.permission!='granted'?`<button class="btn alt" onclick="enableN()">🔔 Bildirimleri aç</button>`:'<p>🔔 Bildirimler açık</p>'}<input id="nk" type="password" placeholder="Yeni API anahtarı" value="${esc(S.key)}"><button class="btn ghost" onclick="S.key=$('#nk').value.trim();save();toast('Anahtar kaydedildi')">API anahtarını güncelle</button></div>`}
+/* ---- bildirimler ---- */
+async function enableN(){try{const p=await Notification.requestPermission();if(p!='granted')return toast('Bildirim izni verilmedi');const reg=await navigator.serviceWorker.ready;try{await reg.periodicSync.register('dilo-daily',{minInterval:12*36e5})}catch(e){}toast('Bildirimler açık 🔔');render()}catch(e){toast('Bu tarayıcıda bildirim desteklenmiyor')}}
+setInterval(()=>{try{if(S.step<3||!('Notification' in window)||Notification.permission!='granted')return;if(S.last!==today()&&new Date().getHours()>=S.rem&&S.notified!==today()){S.notified=today();save();navigator.serviceWorker.ready.then(r=>r.showNotification('Dilo 🦜',{body:S.nt||'Bugünkü dersini yap, serini koru! 🔥',icon:'icon-192.png',tag:'dilo-daily'}))}}catch(e){}},60000);
+render();if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
