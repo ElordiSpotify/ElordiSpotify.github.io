@@ -1,0 +1,827 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DoguAI — English Companion</title>
+<style>
+:root{color-scheme:dark;--bg:#090d16;--panel:#111827;--panel2:#182235;--line:#29364b;--text:#edf2fb;--muted:#9aa9bf;--accent:#91aaff;--green:#8ce3bb;--red:#ff9b9b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#17213b 0,#090d16 55%);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel2);color:var(--text)}
+button:hover{filter:brightness(1.13)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0b1220;color:var(--text);outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+.wrap{max-width:1050px;margin:auto;padding:22px 16px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:45px;height:45px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(140deg,#9bb1ff,#7b76d8);color:#10172c;font-size:23px;font-weight:850}
+h1{font-size:21px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px}
+.panel{background:#101725eF;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.pad{padding:17px}
+h2{font-size:16px;margin:0 0 12px}
+h3{font-size:14px;margin:15px 0 7px}
+.small{font-size:12px;color:var(--muted)}
+.stack{display:grid;gap:10px}
+.primary{background:var(--accent);border-color:var(--accent);color:#10172c;font-weight:750}
+.danger{border-color:#71414c;color:#ffc2c2}
+.good{color:var(--green)}
+.status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
+.dot{height:8px;width:8px;border-radius:50%;background:#75839b;display:inline-block}
+.dot.ok{background:var(--green)}
+.chathead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 17px;border-bottom:1px solid var(--line)}
+.chathead h2{margin:0}
+.chat{height:min(56vh,560px);min-height:340px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:13px}
+.msg{max-width:88%;padding:12px 14px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.ai{align-self:flex-start;background:#1a2639;border:1px solid #293850;border-top-left-radius:5px}
+.msg.user{align-self:flex-end;background:#334574;border:1px solid #465d91;border-top-right-radius:5px}
+.msg .who{font-size:11px;color:#b9c8e4;margin-bottom:4px;font-weight:700}
+.composer{padding:14px;border-top:1px solid var(--line)}
+.composer textarea{min-height:54px;max-height:150px;resize:vertical}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.actions .spacer{flex:1}
+.mic{min-width:54px;font-size:19px}
+.mic.recording{background:#6d2936;border-color:#b35b6a;animation:pulse 1.1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 5px #d55a5a30}}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--line);margin:17px 0}
+.historyItem{padding:11px 0;border-bottom:1px solid var(--line)}
+.historyItem:last-child{border:0}
+.historyItem button{margin-top:7px;font-size:12px;padding:6px 9px}
+.result{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.result h3{margin-top:18px}
+#reportArea{margin-top:16px}
+.reportHead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.note{background:#171f30;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:12px;color:var(--muted)}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);max-width:90vw;background:#26344c;border:1px solid #4a5c7c;border-radius:12px;padding:11px 16px;display:none;z-index:5}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{order:2}.main{order:1}.chat{height:48vh;min-height:300px}.wrap{padding:13px 10px 30px}header{align-items:flex-start}.msg{max-width:95%}}
+</style>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b0f19">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0b0f19">
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="brand"><div class="logo">D</div><div><h1>DoguAI</h1><div class="sub">Your English conversation companion</div></div></div>
+ <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">Hazır</span></div>
+</header>
+
+<div class="layout">
+ <aside class="panel sidebar">
+  <div class="pad">
+   <h2>Ayarlar</h2>
+   <label for="apiKey">Gemini API key</label>
+   <input id="apiKey" type="password" autocomplete="off" placeholder="AIza..." />
+   <div class="actions"><button id="saveKey" class="primary">Anahtarı doğrula ve kaydet</button></div>
+   <div id="keyStatus" class="small" style="margin-top:8px">API anahtarı henüz doğrulanmadı.</div>
+   <p class="note" style="margin-top:12px">Anahtar bu tarayıcıda saklanır; şifrelenmez. Paylaşılan bilgisayarlarda kaydetme.</p>
+   <hr>
+   <h2>Oturum</h2>
+   <div class="small">Normal sohbet sırasında hatalar sürekli düzeltilmez. Ayrıntılı analiz yalnızca oturumu bitirdiğinde hazırlanır.</div>
+   <div class="stack" style="margin-top:12px">
+    <button id="newSession">Yeni sohbet</button>
+    <button id="finishSession" class="danger">Sohbeti Bitir · Analiz Et</button>
+    <button id="makePrompt">Öğrenme promptu oluştur</button>
+   </div>
+   <hr>
+   <div class="reportHead"><h2>Öğrenme geçmişi</h2><button id="clearHistory" style="font-size:11px;padding:5px 8px">Geçmişi sil</button></div>
+   <div id="historyList" class="small">Henüz oturum yok.</div>
+  </div>
+ </aside>
+
+ <main class="main">
+  <section class="panel">
+   <div class="chathead">
+    <div><h2>English conversation</h2><div class="small">Talk naturally. No lesson after every sentence.</div></div>
+    <button id="exportHistory" title="Öğrenme geçmişini dışa aktar">Dışa aktar</button>
+   </div>
+   <div id="chat" class="chat" aria-live="polite">
+    <div class="msg ai"><div class="who">DoguAI</div>Hi! I'm DoguAI. What would you like to talk about today?</div>
+   </div>
+   <div class="composer">
+    <textarea id="message" placeholder="Type in English... (Enter to send, Shift+Enter for a new line)"></textarea>
+    <div class="actions">
+     <button id="mic" class="mic" title="Basılı tut ve konuş; bırakınca durur" aria-label="Basılı tutarak konuş">🎙️</button>
+     <button id="send" class="primary">Gönder ↗</button>
+     <span class="spacer"></span>
+     <span id="micStatus" class="small">Mikrofon hazır değilse yazabilirsin.</span>
+    </div>
+   </div>
+  </section>
+
+  <section id="reportArea" class="panel hidden">
+   <div class="pad">
+    <div class="reportHead"><h2 id="reportTitle">Sonuç</h2><div class="actions"><button id="copyReport">Raporu kopyala</button><button id="closeReport">Kapat</button></div></div>
+    <div id="report" class="result"></div>
+   </div>
+  </section>
+ </main>
+</div>
+</div>
+<div id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+const $ = id => document.getElementById(id);
+const KEY_STORE = "doguai_gemini_key_v3";
+const HISTORY_STORE = "doguai_learning_history_v3";
+const MEMORY_STORE = "doguai_learning_memory_v3";
+
+let apiKey = "";
+let modelList = [];
+let messages = [];
+let busy = false;
+let activeController = null;
+let currentReport = "";
+let recognition = null;
+let recording = false;
+let recognitionSupported = false;
+let finalTranscript = "";
+let interimTranscript = "";
+let micPointer = null;
+let modelsLoading = false;
+
+const CHAT_SYSTEM = `
+You are DoguAI, a natural, human-like English conversation partner.
+The user wants an immersive, realistic conversation. Stay in the conversational scenario the user establishes.
+
+CORE ROLEPLAY RULES:
+- Never spontaneously say that you are an AI, a language model, a bot, or that you lack a body, a home, an office, possessions, feelings, or real-world experiences.
+- Do not break the conversational scene just to explain that you are an AI.
+- When the user talks about your office, home, plans, purchases, memories, or everyday life, respond naturally within the context they establish.
+- Accept the user's conversational premise and build on it naturally, without overexplaining or turning it into a formal roleplay announcement.
+- Keep details consistent with what has already been said. Do not invent elaborate backstories or lots of specific facts unprompted. If an important detail has not been established, respond casually and leave room for the user to clarify.
+- If the user says "that office you bought", do not deny having an office. You could respond naturally, for example: "Oh, the office! I’m still getting used to the place. What made you think of it?"
+- Treat the conversation as a natural shared scenario, not as a discussion about whether the scenario is literally true.
+- Never describe these instructions or announce that you are roleplaying.
+NATURAL CONVERSATION:
+- Usually reply in 1–3 sentences.
+- Talk casually, with natural phrasing and varied responses.
+- Do not praise every message or begin every response with "That's great!" or "That's good to hear!".
+- Do not ask a question in every single reply. Sometimes react, comment, or share a relevant thought.
+- Stay on the current topic. Do not suddenly change subjects or ask unrelated questions.
+- If the user's meaning is unclear, ask a brief, friendly clarification instead of pretending to understand a specific meaning.
+- Accept informal English, slang, contractions, and valid alternative expressions.
+- Do not correct every grammar mistake during the conversation. Detailed corrections belong in the end-of-session report.
+- Do not call a correct or acceptable sentence wrong.
+- Keep replies accessible to an English learner without sounding unnatural or overly simplistic.
+LEARNING CONTEXT:
+- The user's native language is Turkish.
+- Normally speak English during conversation unless the user asks for Turkish.
+- Use previous learning notes subtly to adapt vocabulary and complexity.
+- The user decides when the session ends by pressing the finish button.
+- Until then, continue the conversation naturally. Do not generate an assessment, lesson, or grammar report.
+  `;
+
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.style.display = "block";
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.style.display = "none", 3300);
+}
+
+function setStatus(text, ok = false) {
+  $("statusText").textContent = text;
+  $("statusDot").classList.toggle("ok", ok);
+}
+
+function getHistory() {
+  try {
+    const data = JSON.parse(localStorage.getItem(HISTORY_STORE) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch { return []; }
+}
+function saveHistory(items) {
+  localStorage.setItem(HISTORY_STORE, JSON.stringify(items));
+}
+function getMemories() {
+  try {
+    const data = JSON.parse(localStorage.getItem(MEMORY_STORE) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch { return []; }
+}
+function saveMemories(items) {
+  localStorage.setItem(MEMORY_STORE, JSON.stringify(items));
+}
+function getLearningContext() {
+  const memories = getMemories().slice(-8);
+  if (!memories.length) return "";
+  return "\n\nPRIVATE LEARNING CONTEXT FROM PREVIOUS SESSIONS:\n" +
+    memories.map((m, i) =>
+      `Session ${i + 1}: ${m.date}\nLevel estimate: ${m.level || "Not enough evidence"}\nSummary: ${m.summary || "Not available"}\nConfirmed patterns: ${(m.errors || []).join("; ") || "No recurring errors confirmed"}\nNext focus: ${m.focus || "Continue conversation and gather more evidence"}`
+    ).join("\n\n") +
+    "\nUse this context gently. Do not assume every old error is still present or mention the notes unless useful.";
+}
+
+function addMessage(role, text) {
+  const item = { role, text, time: new Date().toISOString() };
+  messages.push(item);
+  renderMessage(item);
+  return item;
+}
+function renderMessage(item) {
+  const div = document.createElement("div");
+  div.className = "msg " + (item.role === "user" ? "user" : "ai");
+  const who = document.createElement("div");
+  who.className = "who";
+  who.textContent = item.role === "user" ? "Sen" : "DoguAI";
+  const body = document.createElement("div");
+  body.textContent = item.text;
+  div.append(who, body);
+  $("chat").appendChild(div);
+  $("chat").scrollTop = $("chat").scrollHeight;
+  return body;
+}
+function resetChatDisplay() {
+  $("chat").replaceChildren();
+  const welcome = document.createElement("div");
+  welcome.className = "msg ai";
+  const who = document.createElement("div");
+  who.className = "who";
+  who.textContent = "DoguAI";
+  const body = document.createElement("div");
+  body.textContent = "Hey! What have you been up to?";
+  welcome.append(who, body);
+  $("chat").append(welcome);
+}
+function formatTime(iso) {
+  try { return new Date(iso).toLocaleString("tr-TR"); }
+  catch { return iso || ""; }
+}
+function setBusy(value, status) {
+  busy = value;
+  $("send").disabled = value;
+  $("finishSession").disabled = value;
+  $("newSession").disabled = value;
+  $("saveKey").disabled = value;
+  if (status) setStatus(status, !value);
+}
+
+async function discoverModels(key) {
+  const response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key=" + encodeURIComponent(key)
+  );
+  const raw = await response.text();
+  if (!response.ok) throw new Error(apiError(raw, response.status));
+  const data = JSON.parse(raw);
+  const models = (data.models || [])
+    .filter(m => (m.supportedGenerationMethods || []).includes("generateContent"))
+    .map(m => m.name)
+    .filter(name => /gemini/i.test(name) && !/embedding|aqa|tts|image|robotics/i.test(name));
+
+  const preferred = [
+    ...models.filter(n => /flash/i.test(n) && !/latest/i.test(n)),
+    ...models.filter(n => /flash/i.test(n)),
+    ...models
+  ];
+  const unique = [...new Set(preferred)];
+  if (!unique.length) throw new Error("Bu API anahtarıyla kullanılabilir Gemini modeli bulunamadı.");
+  return unique;
+}
+function apiError(raw, status) {
+  try {
+    const d = JSON.parse(raw);
+    return d.error?.message || `Gemini API hatası (${status})`;
+  } catch { return `Gemini API hatası (${status}): ${raw.slice(0, 250)}`; }
+}
+
+async function validateKey(key) {
+  if (!key || key.length < 15) throw new Error("Geçerli görünen bir API anahtarı gir.");
+  modelsLoading = true;
+  const found = await discoverModels(key);
+  modelsLoading = false;
+  apiKey = key;
+  modelList = found;
+  localStorage.setItem(KEY_STORE, key);
+  $("apiKey").value = key;
+  $("keyStatus").textContent = "Anahtar doğrulandı. " + found.length + " model bulundu.";
+  $("keyStatus").className = "small good";
+  setStatus("Bağlantı hazır", true);
+  return found;
+}
+
+async function streamGemini({key, model, system, contents, maxTokens = 1200, temperature = 0.8, signal, onText}) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/${model}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    signal,
+    body: JSON.stringify({
+      systemInstruction: {parts:[{text:system}]},
+      contents,
+      generationConfig: {
+        temperature,
+        maxOutputTokens: maxTokens
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const raw = await response.text();
+    throw new Error(apiError(raw, response.status));
+  }
+  if (!response.body) throw new Error("Tarayıcı bu yanıt akışını desteklemiyor.");
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result = "";
+  while (true) {
+    const {value, done} = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, {stream:true});
+    const events = buffer.split(/\r?\n/);
+    buffer = events.pop() || "";
+    for (const line of events) {
+      if (!line.startsWith("data:")) continue;
+      const raw = line.slice(5).trim();
+      if (!raw || raw === "[DONE]") continue;
+      let obj;
+      try { obj = JSON.parse(raw); } catch { continue; }
+      const piece = (obj.candidates?.[0]?.content?.parts || [])
+        .map(p => p.text || "").join("");
+      if (piece) {
+        result += piece;
+        if (onText) onText(result, piece);
+      }
+      const finishReason = obj.candidates?.[0]?.finishReason;
+      if (finishReason === "SAFETY") throw new Error("Yanıt güvenlik filtresi nedeniyle oluşturulamadı.");
+    }
+  }
+  if (!result.trim()) throw new Error("Model boş yanıt verdi. Yeniden deneyebilirsin.");
+  return result.trim();
+}
+
+async function generateWithFallback(options) {
+  const key = options.key || apiKey;
+  let lastError;
+  let list = modelList.length ? modelList : ["models/gemini-2.5-flash","models/gemini-2.0-flash"];
+  for (const model of list.slice(0, 5)) {
+    try {
+      return await streamGemini({...options, key, model});
+    } catch (err) {
+      lastError = err;
+      if (err.name === "AbortError") throw err;
+      const msg = String(err.message || "");
+      if (!/429|500|502|503|504|quota|rate|overload|temporar|unavailable|not found|not supported|404/i.test(msg)) {
+        throw err;
+      }
+    }
+  }
+  throw lastError || new Error("Kullanılabilir model bulunamadı.");
+}
+
+function apiContents(includeCurrent = true) {
+  const arr = messages.slice();
+  return arr
+    .filter(m => m.role === "user" || m.role === "model")
+    .map(m => ({role:m.role, parts:[{text:m.text}]}));
+}
+
+async function sendMessage() {
+  if (busy) return;
+  if (!apiKey) { toast("Önce Gemini API anahtarını ayarlardan doğrula."); $("apiKey").focus(); return; }
+  const text = $("message").value.trim();
+  if (!text) return;
+  $("message").value = "";
+  addMessage("user", text);
+  setBusy(true, "DoguAI düşünüyor…");
+  const responseBody = renderMessage({role:"model",text:""});
+  responseBody.textContent = "…";
+  const contents = apiContents();
+  contents.push({role:"user",parts:[{text:""}]});
+  // The current user message is already in messages; use the complete history once.
+  const history = apiContents();
+  activeController = new AbortController();
+  try {
+    let first = true;
+    const result = await generateWithFallback({
+      system: CHAT_SYSTEM + getLearningContext(),
+      contents: history,
+      maxTokens: 1000,
+      temperature: 0.85,
+      signal: activeController.signal,
+      onText: (full) => {
+        responseBody.textContent = full;
+        $("chat").scrollTop = $("chat").scrollHeight;
+        if (first) first = false;
+      }
+    });
+    // Store the model reply once the stream has finished.
+    messages.push({role:"model",text:result,time:new Date().toISOString()});
+    responseBody.textContent = result;
+  } catch (err) {
+    responseBody.textContent = "";
+    if (err.name === "AbortError") {
+      responseBody.textContent = "İstek durduruldu. Mesajını tekrar gönderebilirsin.";
+    } else {
+      responseBody.textContent = "Bağlantı hatası: " + err.message;
+    }
+  } finally {
+    activeController = null;
+    setBusy(false, "Hazır");
+  }
+}
+
+function sessionTranscript() {
+  return messages.map(m => `${m.role === "user" ? "STUDENT" : "DOGUAI"}: ${m.text}`).join("\n\n");
+}
+
+async function finishSession() {
+  if (busy) return;
+  if (!apiKey) { toast("Önce Gemini API anahtarını doğrula."); return; }
+  const studentMessages = messages.filter(m => m.role === "user");
+  if (!studentMessages.length) { toast("Önce biraz sohbet et."); return; }
+
+  setBusy(true, "Sohbet analiz ediliyor…");
+  $("reportArea").classList.remove("hidden");
+  $("reportTitle").textContent = "İngilizce sohbet analizi";
+  $("report").textContent = "Sohbetin inceleniyor. Bu işlem biraz sürebilir…";
+  activeController = new AbortController();
+
+  const transcript = sessionTranscript();
+  const reportSystem = `
+You are an evidence-based English language assessment assistant for a Turkish-speaking learner.
+Analyze ONLY the actual conversation transcript. Do not invent student sentences or claim that an unobserved skill was demonstrated.
+Write a detailed, readable report in TURKISH. Use Markdown headings and lists.
+Correctness matters more than length. Correct only real errors; accept valid informal English and alternative phrasing.
+Distinguish student messages from AI messages. Never assess the AI's sentences as the student's English.
+If there is little evidence, clearly say "Yeterli kanıt yok" rather than making a confident CEFR estimate.
+Do not claim a sentence was correct if the intended meaning is uncertain. If a phrase is unclear, explain the ambiguity.
+Include:
+1. Oturum özeti.
+2. Tahmini CEFR seviyesi and confidence/evidence; explicitly state limits if the conversation is short.
+3. Student sentence-by-sentence review: original sentence, a natural corrected version only if needed, Turkish explanation, and whether the original was already acceptable.
+4. Confirmed recurring errors, only if repeated evidence exists.
+5. Useful words and natural phrases grounded in this transcript.
+6. Strengths supported by examples.
+7. Three realistic next practice goals.
+8. A short, encouraging but honest conclusion.
+Avoid repeating the same explanation excessively. Do not use made-up examples as if the student said them.
+Keep the report detailed but finite. Never end mid-sentence. Do not output JSON.
+`;
+  try {
+    const report = await generateWithFallback({
+      system: reportSystem,
+      contents:[{role:"user",parts:[{text:"Analyze this complete conversation transcript:\n\n"+transcript}]}],
+      maxTokens: 8192,
+      temperature: 0.25,
+      signal: activeController.signal
+    });
+    currentReport = report;
+    $("report").textContent = report;
+    const date = new Date().toISOString();
+    const history = getHistory();
+    const session = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      date,
+      transcript,
+      report,
+      userMessageCount: studentMessages.length
+    };
+    history.push(session);
+    saveHistory(history.slice(-50));
+
+    // Create a compact, separate learning memory; never use the long report as the only memory.
+    try {
+      const memoryText = await generateWithFallback({
+        system:`You create compact, accurate learning memory from an English assessment report.
+Return ONLY valid JSON with these fields:
+{"level":"...","confidence":"...","summary":"...","errors":["..."],"focus":"...","phrases":["..."]}
+Rules: Turkish language; short and evidence-based; include only confirmed issues; if no recurring errors were observed, errors must be an empty array. Do not invent learner mistakes. Keep summary under 450 characters, each error under 180 characters, focus under 250 characters, and at most 5 phrases.`,
+        contents:[{role:"user",parts:[{text:"Conversation transcript:\n"+transcript+"\n\nAssessment report:\n"+report}]}],
+        maxTokens: 900,
+        temperature: 0.1,
+        signal: activeController.signal
+      });
+      const clean = memoryText.replace(/```json|```/g,"").trim();
+      const start = clean.indexOf("{");
+      const end = clean.lastIndexOf("}");
+      if (start >= 0 && end > start) {
+        const memory = JSON.parse(clean.slice(start,end+1));
+        const memories = getMemories();
+        memories.push({
+          date: formatTime(date),
+          level: String(memory.level || "Yeterli kanıt yok"),
+          confidence: String(memory.confidence || "Sınırlı"),
+          summary: String(memory.summary || "Kısa oturum; daha fazla kanıt gerekli.").slice(0,450),
+          errors: Array.isArray(memory.errors) ? memory.errors.slice(0,8).map(String) : [],
+          focus: String(memory.focus || "Daha uzun, doğal sohbetlerle daha fazla kanıt topla.").slice(0,250),
+          phrases: Array.isArray(memory.phrases) ? memory.phrases.slice(0,5).map(String) : []
+        });
+        saveMemories(memories.slice(-50));
+      }
+    } catch (memoryErr) {
+      console.warn("Learning memory generation failed:", memoryErr);
+      // The full report is already saved; never discard it if compact memory fails.
+    }
+
+    renderHistory();
+    toast("Analiz tamamlandı ve oturum kaydedildi.");
+  } catch (err) {
+    $("report").textContent = "Analiz tamamlanamadı: " + err.message +
+      "\n\nSohbetin ekranda duruyor. Tekrar denemek için yeniden 'Sohbeti Bitir · Analiz Et' butonuna bas.";
+  } finally {
+    activeController = null;
+    setBusy(false, "Hazır");
+  }
+}
+
+function makeLearningPrompt() {
+  const memories = getMemories();
+  const history = getHistory();
+  if (!memories.length && !history.length) {
+    toast("Önce en az bir sohbeti bitirip analiz ettir.");
+    return;
+  }
+
+  const compact = memories.slice(-10).map((m, i) => [
+    `OTURUM ${i+1} — ${m.date}`,
+    `Seviye: ${m.level || "Yeterli kanıt yok"} (${m.confidence || "güven belirtilmemiş"})`,
+    `Özet: ${m.summary || "Özet yok"}`,
+    `Doğrulanmış tekrarlayan hatalar: ${(m.errors || []).length ? m.errors.join(" | ") : "Henüz doğrulanmış tekrarlayan hata yok"}`,
+    `Gelişim odağı: ${m.focus || "Daha fazla doğal konuşma verisi topla"}`,
+    `Faydalı ifadeler: ${(m.phrases || []).join(", ") || "Henüz yok"}`
+  ].join("\n")).join("\n\n");
+
+  // This prompt is built from the compact memory, not the full-length report.
+  // It is never cut using a character slice.
+  const prompt = `Sen benim kişisel İngilizce konuşma partnerim ve öğretmenimsin. Ana dilim Türkçe.
+
+AMAÇ
+Benimle doğal, gerçekçi bir İngilizce sohbeti sürdür ve geçmişteki öğrenme verilerimi kullanarak seviyeme uygun konuş.
+
+SOHBET KURALLARI
+- Normal sohbeti İngilizce sürdür; ben Türkçe açıklama istersem Türkçe cevap ver.
+- Bir insanla gündelik sohbet ediyormuş gibi konuş. Genellikle 1–3 cümle yeterli.
+- Her cevabın başında beni övme. "That's great!", "Excellent!" gibi kalıpları sürekli tekrarlama.
+- Her mesajda mutlaka soru sorma. Bazen konuya doğal bir yorumla karşılık ver.
+- Konuyu sebepsiz yere değiştirme ve art arda ilgisiz sorular sorma.
+- Anlamadığın cümleyi anlamış gibi yapma. Kısa ve doğal bir açıklama iste.
+- Birden fazla anlam mümkünse tahminini gerçekmiş gibi sunma.
+- Normal sohbet sırasında her hatamı düzeltme. Ayrıntılı analiz istediğimde veya oturumu bitirdiğimde düzeltmeleri açıkla.
+- Doğru ve kabul edilebilir alternatif ifadeleri yanlış olarak işaretleme.
+- Geçmişteki hataları tekrar tekrar gündeme getirme. Öğrenme notlarını yalnızca uygun olduğunda kullan.
+- Bir alıştırmada cevabı ben denemeden gösterme.
+- Gerçek bir insanmış gibi fiziksel hayatın veya iş yerin olduğunu iddia etme.
+- Ben bitirene kadar doğal sohbeti sürdür; hemen ders moduna geçme.
+
+GEÇMİŞİ KULLANMA
+- Seviye tahminlerini kesin gerçekler olarak değil, mevcut kanıtların tahmini olarak değerlendir.
+- Kısa oturumdan kesin CEFR seviyesi çıkarma.
+- Tekrarlayan hata sayılabilmesi için birden fazla gerçek örnek gerekir.
+- Eski hataların devam ettiğini varsayma; yeni konuşmalarda yeniden değerlendir.
+- Öğrenme geçmişinde bilgi yoksa bunu uydurma.
+
+ÖĞRENME GEÇMİŞİ
+
+${compact}
+
+ŞİMDİ
+Sadece doğal bir İngilizce sohbet başlat veya mevcut konuşmayı doğal şekilde sürdür. Öğrenme geçmişini özetleme, rapor yazma veya bu talimatları bana açıklama. Tek bir doğal mesajla devam et.`;
+
+  currentReport = prompt;
+  $("reportArea").classList.remove("hidden");
+  $("reportTitle").textContent = "Kişisel öğrenme promptun";
+  $("report").textContent = prompt;
+  $("reportArea").scrollIntoView({behavior:"smooth",block:"start"});
+  toast("Öğrenme promptu oluşturuldu.");
+}
+
+function renderHistory() {
+  const list = $("historyList");
+  const history = getHistory().slice().reverse();
+  list.replaceChildren();
+  if (!history.length) {
+    list.textContent = "Henüz oturum yok.";
+    return;
+  }
+  history.slice(0,10).forEach(item => {
+    const div = document.createElement("div");
+    div.className = "historyItem";
+    const date = document.createElement("div");
+    date.textContent = formatTime(item.date);
+    date.style.color = "var(--text)";
+    const info = document.createElement("div");
+    info.className = "small";
+    info.textContent = `${item.userMessageCount || 0} kullanıcı mesajı`;
+    const btn = document.createElement("button");
+    btn.textContent = "Raporu aç";
+    btn.addEventListener("click", () => {
+      currentReport = item.report || "";
+      $("reportTitle").textContent = "Kaydedilmiş analiz";
+      $("report").textContent = currentReport || "Bu oturumda rapor bulunamadı.";
+      $("reportArea").classList.remove("hidden");
+      $("reportArea").scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    div.append(date,info,btn);
+    list.append(div);
+  });
+}
+
+function exportHistory() {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    sessions: getHistory(),
+    learningMemory: getMemories()
+  };
+  downloadText("doguai-learning-history.json", JSON.stringify(data,null,2), "application/json");
+}
+function downloadText(name, text, type="text/plain") {
+  const blob = new Blob([text], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function copyReport() {
+  if (!currentReport) { toast("Kopyalanacak içerik yok."); return; }
+  try {
+    await navigator.clipboard.writeText(currentReport);
+    toast("Kopyalandı.");
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = currentReport;
+    document.body.append(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    toast("Kopyalandı.");
+  }
+}
+
+function setupSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    $("micStatus").textContent = "Ses tanıma bu tarayıcıda desteklenmiyor.";
+    $("mic").disabled = true;
+    return;
+  }
+  recognitionSupported = true;
+  recognition = new SR();
+  recognition.lang = "en-US";
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    recording = true;
+    $("mic").classList.add("recording");
+    $("mic").textContent = "🔴";
+    $("micStatus").textContent = "Dinliyorum… bırakınca durur.";
+  };
+  recognition.onresult = event => {
+    interimTranscript = "";
+    for (let i=event.resultIndex; i<event.results.length; i++) {
+      const piece = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalTranscript += piece + " ";
+      else interimTranscript += piece;
+    }
+    $("message").value = (finalTranscript + interimTranscript).trim();
+  };
+  recognition.onerror = event => {
+    const messages = {
+      "not-allowed":"Mikrofon izni verilmedi. Chrome site izinlerinden mikrofonu aç.",
+      "service-not-allowed":"Ses tanıma servisi engellendi. localhost veya HTTPS üzerinden dene.",
+      "no-speech":"Ses algılanmadı. Tekrar basılı tutup konuş.",
+      "network":"Ses tanıma servisi için ağ bağlantısı gerekli."
+    };
+    $("micStatus").textContent = messages[event.error] || ("Mikrofon: " + event.error);
+    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+      toast("Mikrofon iznini Chrome site ayarlarından kontrol et.");
+    }
+  };
+  recognition.onend = () => {
+    recording = false;
+    $("mic").classList.remove("recording");
+    $("mic").textContent = "🎙️";
+    $("micStatus").textContent = $("message").value.trim()
+      ? "Metni düzenleyebilir, sonra gönderebilirsin."
+      : "Basılı tut ve İngilizce konuş.";
+    micPointer = null;
+  };
+}
+
+function startMic(event) {
+  if (!recognition || busy) return;
+  if (recording) return;
+  event?.preventDefault();
+  finalTranscript = "";
+  interimTranscript = "";
+  try {
+    // User gesture starts recognition; after permission is granted, subsequent
+    // sessions reuse the browser's site permission.
+    recognition.start();
+  } catch (err) {
+    $("micStatus").textContent = "Mikrofon başlatılamadı. Birkaç saniye sonra tekrar dene.";
+  }
+}
+function stopMic(event) {
+  event?.preventDefault();
+  if (recognition && recording) {
+    try { recognition.stop(); } catch {}
+  }
+}
+
+$("saveKey").addEventListener("click", async () => {
+  const key = $("apiKey").value.trim();
+  if (!key) { toast("Gemini API anahtarını gir."); return; }
+  $("keyStatus").textContent = "Anahtar doğrulanıyor…";
+  try {
+    const found = await validateKey(key);
+    toast("Bağlantı hazır. " + found.length + " model bulundu.");
+  } catch (err) {
+    modelsLoading = false;
+    $("keyStatus").textContent = err.message;
+    $("keyStatus").className = "small";
+    setStatus("Bağlantı kurulamadı", false);
+    toast("API anahtarı doğrulanamadı.");
+  }
+});
+
+$("send").addEventListener("click", sendMessage);
+$("message").addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+});
+$("finishSession").addEventListener("click", finishSession);
+$("makePrompt").addEventListener("click", makeLearningPrompt);
+$("exportHistory").addEventListener("click", exportHistory);
+$("copyReport").addEventListener("click", copyReport);
+$("closeReport").addEventListener("click", () => $("reportArea").classList.add("hidden"));
+
+$("newSession").addEventListener("click", () => {
+  if (busy) return;
+  if (messages.some(m => m.role === "user")) {
+    if (!confirm("Bu sohbet analiz edilmediyse mevcut sohbeti kaydetmeden yeni sohbete geçilecek. Devam edilsin mi?")) return;
+  }
+  messages = [];
+  currentReport = "";
+  resetChatDisplay();
+  $("reportArea").classList.add("hidden");
+  $("message").value = "";
+  toast("Yeni sohbet hazır.");
+});
+
+$("clearHistory").addEventListener("click", () => {
+  if (!confirm("Kaydedilmiş tüm raporlar ve öğrenme hafızası silinsin mi?")) return;
+  localStorage.removeItem(HISTORY_STORE);
+  localStorage.removeItem(MEMORY_STORE);
+  renderHistory();
+  toast("Öğrenme geçmişi silindi.");
+});
+
+$("mic").addEventListener("pointerdown", event => {
+  if (event.button !== undefined && event.button !== 0) return;
+  micPointer = event.pointerId;
+  try { $("mic").setPointerCapture(event.pointerId); } catch {}
+  startMic(event);
+});
+$("mic").addEventListener("pointerup", stopMic);
+$("mic").addEventListener("pointercancel", stopMic);
+$("mic").addEventListener("lostpointercapture", stopMic);
+$("mic").addEventListener("contextmenu", event => event.preventDefault());
+
+window.addEventListener("beforeunload", () => {
+  if (recognition && recording) {
+    try { recognition.stop(); } catch {}
+  }
+});
+
+function init() {
+  renderHistory();
+  setupSpeech();
+  const saved = localStorage.getItem(KEY_STORE);
+  if (saved) {
+    apiKey = saved;
+    $("apiKey").value = saved;
+    $("keyStatus").textContent = "Kaydedilmiş anahtar bulundu. Doğrulamak için butona bas.";
+  }
+  if (location.protocol === "file:") {
+    $("micStatus").textContent = "İpucu: Mikrofon için localhost üzerinden açman daha güvenilir.";
+  } else if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+    $("micStatus").textContent = "Mikrofon için HTTPS veya localhost kullan.";
+  }
+}
+init();
+})();
+</script>
+</body>
+</html>
